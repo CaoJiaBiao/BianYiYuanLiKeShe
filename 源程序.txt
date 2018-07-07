@@ -1,0 +1,231 @@
+package V1;
+
+import java.util.Scanner;
+import java.util.Stack;
+
+public class Test {
+	public static void prompt_Information() {//没错
+		System.out.println("此程序的文法是：");
+		System.out.println("E ->TE'");
+		System.out.println("E'->+TE'|e");
+		System.out.println("T ->FT'");
+		System.out.println("T'->*FT'|e");
+		System.out.println("F ->id|(E)");
+		System.out.println("分析表为：");
+		System.out.println("    i        +       *        (        )      #    ");
+		System.out.println("E   E ->TE'                   E ->TE'              ");
+		System.out.println("E'           E'->+TE'                  E'->e  E'->e");
+		System.out.println("T   T ->FT'                   T ->FT'              ");
+		System.out.println("T'           T'->e   T'->*FT'          T'->e  T'->e");
+		System.out.println("F   F->id                     F->(E)               ");
+		System.out.println("请输入字符串：");
+	}
+	public static void InitContent(String[][] tStrings) {//没错
+		tStrings[0][1] = "i";
+		tStrings[0][2] = "+";
+		tStrings[0][3] = "*";
+		tStrings[0][4] = "(";
+		tStrings[0][5] = ")";
+		tStrings[0][6] = "#";
+		tStrings[1][0] = "E";
+		tStrings[1][1] = "T E'";
+		tStrings[1][4] = "T E'";
+		tStrings[2][0] = "E'";
+		tStrings[2][2] = "+ T E'";
+		tStrings[2][5] = "e";
+		tStrings[2][6] = "e";
+		tStrings[3][0] = "T";
+		tStrings[3][1] = "F T'";
+		tStrings[3][4] = "F T'";
+		tStrings[4][0] = "T'";
+		tStrings[4][2] = "e";
+		tStrings[4][3] = "* F T'";
+		tStrings[4][5] = "e";
+		tStrings[4][6] = "e";
+		tStrings[5][0] = "F";
+		tStrings[5][1] = "i";
+		tStrings[5][4] = "( E )";
+		
+	}
+	public static void result(boolean result) {
+		if (result) {
+			System.out.println("是文法的句子");
+		}else {
+			System.out.println("不是文法的句子");
+		}
+		System.out.println("程序结束");
+	}
+	public static String getString(Stack<String> stack){//获取栈中的值放在string中
+		StringBuffer stringBuffer = new StringBuffer();
+		//System.out.println("------"+stack.size());
+		String[] shuzusStrings = new String[stack.size()];
+		StringBuffer stringBuffer2 = new StringBuffer();
+		String tempString = "";
+		int num=0;
+		while(!stack.empty()){
+			shuzusStrings[num] = stack.pop();//用来回填
+			tempString = shuzusStrings[num];
+			if (shuzusStrings[num].length() == 2) {//如果是有丿的
+				stringBuffer2.append(shuzusStrings[num]);
+				tempString = stringBuffer2.reverse().toString();
+				stringBuffer2 = new StringBuffer();
+			}
+			stringBuffer.append(tempString);//用来返回字符串
+			num++;
+		}
+		String string = stringBuffer.toString();//i+i*i#
+		for (int i = shuzusStrings.length - 1; i >= 0; i--) {
+			stack.push(shuzusStrings[i]);//回填
+		}
+		
+		return string;
+	}
+	public static void showStackStatue(String string1,String string2,int step) {
+		System.out.printf("%-20d%-15s%-15s", step,string1,string2);
+		System.out.println(" ");
+	}
+	//string1分析栈的内容，string2输入站的内容，string3所用产生式
+	public static void showStackStatue2(String string1,String string2,int step,String string3) {
+		System.out.printf("%-20d%-15s%-15s%-15s", step,string1,string2,string3);
+		System.out.println(" ");
+	}
+	public static void main(String[] args) {
+		prompt_Information();
+		String E = "E",T = "T",Epie = "E'",Tpie = "T'",F = "F",i = "i",add = "+",e = "e",mul = "*",zuoKuoHao = "(",youKuoHao = ")";//#另做安排
+		String[][] Content = new String[6][7];
+		for (int m = 0; m < Content.length; m++) {
+			for (int n = 0; n < Content[0].length; n++) {
+				Content[m][n] = "null";
+			}
+		}
+		InitContent(Content);
+		Stack<String> AnalysisStack = new Stack<String>();//分析栈
+		Stack<String> inputStack = new Stack<String>();//输入栈
+		AnalysisStack.push("#");///分析栈放#E
+		AnalysisStack.push("E");
+		inputStack.push("#");//输入栈放#
+		Scanner scanner = new Scanner(System.in);
+		String inputString = scanner.nextLine();//inputString = i+i*i
+		StringBuffer stringBuffer = new StringBuffer(inputString);
+		inputString = stringBuffer.reverse().toString();   //应为i*i+i
+		//System.out.println(inputString);
+		for (int j = 0; j < inputString.length(); j++) {
+			inputStack.push(inputString.charAt(j)+"");
+		}
+		/*while(!inputStack.empty()){
+			String tempString= inputStack.pop();
+			System.out.println(tempString);
+		}
+		System.out.println("-----------------------");
+		while(!AnalysisStack.empty()){
+		String tempString= AnalysisStack.pop();
+		System.out.println(tempString);
+		}*/
+		boolean result = false;
+		String stringOutFromAnalysisStack;//从分析栈中拿出来的
+		String stringInFromAnalysisStack;
+		String stringOutFrominputStack;//从输入栈中拿出来的
+		String stringInInputStack;
+		System.out.println("步骤                             分析栈                 输入栈                 所用表达式");
+		String string10 = getString(AnalysisStack);
+		StringBuffer stringBuffer20 = new StringBuffer(string10);
+		string10 = stringBuffer20.reverse().toString();
+		String string20 = getString(inputStack);
+		showStackStatue(string10, string20, 0);
+		for (int steps = 1;; steps++) {
+			if ((AnalysisStack.peek() == "#") && (inputStack.peek() == "#")) {
+				//System.out.println("调试："+AnalysisStack.peek());
+				//System.out.println("调试："+inputStack.peek());
+				result = true;
+				break;
+			}
+			/*if ((AnalysisStack.peek() != "#") && (inputStack.peek() == "#")) {
+				System.out.println("调试："+AnalysisStack.peek());
+				System.out.println("调试："+inputStack.peek());
+				result = false;
+				break;
+			}*/
+			if (AnalysisStack.peek().equals(inputStack.peek())) {//如果分析栈和输入栈栈顶相同
+				AnalysisStack.pop();
+				inputStack.pop();
+				String string1 = getString(AnalysisStack);
+				StringBuffer stringBuffer2 = new StringBuffer(string1);
+				string1 = stringBuffer2.reverse().toString();
+				String string2 = getString(inputStack);
+				showStackStatue(string1, string2, steps);
+				continue;
+			}
+			stringOutFromAnalysisStack = AnalysisStack.pop();//从分析栈中拿出来的
+			stringOutFrominputStack = inputStack.pop();//从输入栈中拿出来的
+			//从字符串数组中判断用哪一个
+			int X = 0;//字符串数组的行列
+			int Y = 0;
+			if (stringOutFromAnalysisStack.equals(E)) {
+				X = 1;
+			}else if (stringOutFromAnalysisStack.equals(Epie)) {
+				X = 2;
+			}else if (stringOutFromAnalysisStack.equals(T)) {
+				X = 3;
+			}else if (stringOutFromAnalysisStack.equals(Tpie)) {
+				X = 4;
+			}else if (stringOutFromAnalysisStack.equals(F)) {
+				X = 5;
+			}else {
+				System.out.println("输入错误");
+				result = false;
+				result(result);
+				System.exit(0);
+			}
+			if (stringOutFrominputStack.equals(i)) {
+				Y = 1;
+			}else if (stringOutFrominputStack.equals(add)) {
+				Y = 2;
+			}else if (stringOutFrominputStack.equals(mul)) {
+				Y = 3;				
+			}else if (stringOutFrominputStack.equals(zuoKuoHao)) {
+				Y = 4;	
+			}else if (stringOutFrominputStack.equals(youKuoHao)) {
+				Y = 5;
+			}else if (stringOutFrominputStack.equals("#")) {
+				Y = 6;
+			}else {
+				System.out.println("输入错误");
+				System.exit(0);
+			}
+			String chanShengShiString = Content[X][Y];
+			if (chanShengShiString.equals(e)) {
+				inputStack.push(stringOutFrominputStack);
+				String string1 = getString(AnalysisStack);
+				StringBuffer stringBuffer2 = new StringBuffer(string1);
+				string1 = stringBuffer2.reverse().toString();
+				String string2 = getString(inputStack);
+				showStackStatue2(string1, string2, steps, stringOutFromAnalysisStack + "->"+chanShengShiString);
+				continue;
+			}
+			if (chanShengShiString.equals("null")) {//这好像不能为空，为空说明失败了(
+				/*AnalysisStack.push(stringOutFromAnalysisStack);
+				AnalysisStack.push(stringOutFrominputStack);//产生式为空，把输入栈中的拿出来放在分析栈中
+				
+				String string1 = getString(AnalysisStack);
+				StringBuffer stringBuffer2 = new StringBuffer(string1);
+				string1 = stringBuffer2.reverse().toString();
+				String string2 = getString(inputStack);
+				showStackStatue(string1, string2, steps);*/
+				result = false;
+				break;
+			}else {//产生式不为空，则用产生式进分析栈，输入栈也需要弹出来一个
+				inputStack.push(stringOutFrominputStack);
+				String[] splitedStrings = chanShengShiString.split(" ");
+				for (int j = splitedStrings.length-1; j >= 0; j--) {
+					AnalysisStack.push(splitedStrings[j]);
+				}
+				String string1 = getString(AnalysisStack);//格式应该是i+i*i#
+				StringBuffer tBuffer = new StringBuffer(string1);
+				string1 = tBuffer.reverse().toString();
+				String string2 = getString(inputStack);
+				showStackStatue2(string1, string2, steps, stringOutFromAnalysisStack + "->"+chanShengShiString);
+			}
+		}
+		result(result);	
+	}
+}
